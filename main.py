@@ -82,15 +82,15 @@ class Main(Login, Admin, User):
         self.logout.config(command=self.__Main_del__)
         self.changeuser.config(command=self.change_user)
         canvas_top = Canvas(self.main_window, bg=TOP_NAV_COLOR, width=700, height=70, highlightthickness=2)
-        image = Image.open("images/crm.png")
+        image = Image.open("images/kmps.png")
         resize_image = image.resize((60, 60))
         self.logo = ImageTk.PhotoImage(resize_image)
         self.label = Label(self.main_window, image=self.logo, bg="#ffffff")
         self.label.image = self.logo
         self.label.grid(column=0, row=0, pady=(10, 15))
 
-        title = Label(canvas_top, text="Easy Business", bg=TOP_NAV_COLOR, font=('Century', 30, 'normal'))
-        title.place(x=220, y=10)
+        title = Label(canvas_top, text="KMPS INVENTORY SYSTEM", bg=TOP_NAV_COLOR, font=('Century', 24, 'normal'))
+        title.place(x=200, y=15)
 
         canvas_top.place(x=200, y=10)
 

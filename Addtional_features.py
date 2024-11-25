@@ -96,17 +96,16 @@ class MyCombobox(tkinter.ttk.Combobox):
             self.autocomplete()
 
 # TEST THIS
-#
-# def test(test_list):
-#     root = tkinter.Tk(className=' AutocompleteEntry demo')
-#     entry = MyEntry(root)
-#     entry.set_completion_list(test_list)
-#     entry.pack()
-#     entry.focus_set()
-#     combo = MyCombobox(root)
-#     combo.set_completion_list(test_list)
-#     combo.pack()
-#     combo.focus_set()
-#     root.bind('<Control-Q>', lambda event=None: root.destroy())
-#     root.bind('<Control-q>', lambda event=None: root.destroy())
-#     root.mainloop()
+def test(test_list):
+    root = tkinter.Tk(className=' AutocompleteEntry demo')
+    entry = MyEntry(root)
+    entry.set_completion_list(test_list)
+    entry.pack()
+    entry.focus_set()
+    combo = MyCombobox(root)
+    combo.set_completion_list(test_list)
+    combo.pack()
+    combo.focus_set()
+    root.bind('<Control-Q>', lambda event=None: root.destroy())
+    root.bind('<Control-q>', lambda event=None: root.destroy())
+    root.mainloop()
