@@ -653,7 +653,64 @@ class Admin:
         self.mainsearch(2)
         self.totalsales = Label(self.tableframe1, text="Total Sales", font="roboto 14 bold").place(x=0, y=400)
 
+
+    def __init__(self, db_connection):
+        self.cur = db_connection.cursor()
+        # Initialize other attributes if necessary
+
     def getsales(self):
+        self.cur.execute("select * from sales")
+        saleslist = self.cur.fetchall()
+
+        for i in range(len(saleslist)):
+            saleslist[i] = list(saleslist[i])
+            self.cur.execute("select product_desc, product_price from products where product_id=?", 
+                             (int(saleslist[i][2]),))
+            list_ = self.cur.fetchall()
+
+            # Check if we got any product details
+            if not list_:
+                print(f"Warning: No product found for product_id {saleslist[i][2]}")
+                continue  # Skip this iteration if no product details were found
+
+            s = (str(saleslist[i][4])).split('-')
+
+            # Ensure we have enough parts in the split result
+            if len(s) < 3:
+                print(f"Warning: saleslist[{i}][4] does not have enough parts: {saleslist[i][4]}")
+                continue  # Skip this iteration if there are not enough parts
+
+            saleslist[i][4] = s[2] + " - " + s[1] + " - " + s[0]
+
+            # Check that saleslist[i] has the expected number of elements before accessing them
+            if len(saleslist[i]) < 6:
+                print(f"Warning: saleslist[{i}] does not have enough elements: {saleslist[i]}")
+                continue  # Skip this iteration if there are not enough elements
+
+            # Prepare the new saleslist entry
+            saleslist[i] = [
+                saleslist[i][0], 
+                saleslist[i][1], 
+                saleslist[i][2], 
+                list_[0][0],  # product_desc
+                saleslist[i][3], 
+                list_[0][1] * int(saleslist[i][3]),  # total price calculation
+                saleslist[i][4], 
+                saleslist[i][5]
+            ]
+
+            # Convert back to a tuple
+            saleslist[i] = tuple(saleslist[i])
+
+        # Insert each sales record into the tree view
+        for record in saleslist:
+            self.tree.insert('', 'end', values=record)
+
+# Example instantiation of the Admin class
+# db_connection = your_database_connection_function()
+# admin_instance = Admin(db_connection)
+
+    """def getsales(self):
         self.cur.execute("select * from sales")
         saleslist = self.cur.fetchall()
         for i in range(0, len(saleslist)):
@@ -672,7 +729,7 @@ class Admin:
             # if cnt % 2 == 0:
             #     self.tree.config(background='blue')
             # cnt += 1
-
+"""
     def searchinvoice(self):
         if self.searchvar.get() == '':
             return

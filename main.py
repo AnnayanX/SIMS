@@ -11,9 +11,9 @@ from Admin_menu import Admin
 from User_menu import User
 from Userlogin import Login
 
-TOP_NAV_COLOR = "#ffffff"
-BG = "#ffffff"
-FG = "#000000"
+TOP_NAV_COLOR = "#d8dee9"
+BG = "#6d8fd3"
+FG = "#040a01"
 
 
 class Main(Login, Admin, User):
