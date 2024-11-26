@@ -28,7 +28,7 @@ class Main(Login, Admin, User):
         # self.main_window.attributes('-fullscreen', True)
 
         self.main_window.iconbitmap("images/icon.ico")
-        self.main_window.title("Business Application")
+        self.main_window.title("KMPS INVENTORY SYSTEM")
         self.main_window.protocol('WM_DELETE_WINDOW', self.__Main_del__)
         self.getdetails()
 
