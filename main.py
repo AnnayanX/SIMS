@@ -17,7 +17,6 @@ FG = "#040a01"
 
 
 class Main(Login, Admin, User):
-
     def __init__(self):
         Login.__init__(self)
         self.loginw.mainloop()
@@ -25,52 +24,45 @@ class Main(Login, Admin, User):
         self.main_window = Toplevel(bg="#FFFFFF")
         self.main_window.state('zoomed')
 
-        # self.main_window.attributes('-fullscreen', True)
-
         self.main_window.iconbitmap("images/icon.ico")
         self.main_window.title("KMPS INVENTORY SYSTEM")
         self.main_window.protocol('WM_DELETE_WINDOW', self.__Main_del__)
         self.getdetails()
 
-    # OVERRIDING CLOSE BUTTON && DESTRUCTOR FOR CLASS LOGIN AND MAIN WINDOW
     def __Main_del__(self):
-        if messagebox.askyesno("Quit", " Leave Application?"):
+        if messagebox.askyesno("Quit", "Leave Application?"):
             self.loginw.quit()
             self.main_window.quit()
             exit(0)
         else:
             pass
 
-    # FETCH USER DETAILS FROM PRODUCTS,USERS AND INVENTORY TABLE
     def getdetails(self):
         self.cur.execute("CREATE TABLE if not exists products("
-                         "product_id varchar (20),"
-                         "product_name varchar (50) NOT NULL,"
-                         "product_desc varchar (50) NOT NULL,"
-                         "product_cat varchar (50),"
+                         "product_id varchar(20),"
+                         "product_name varchar(50) NOT NULL,"
+                         "product_desc varchar(50) NOT NULL,"
+                         "product_cat varchar(50),"
                          "product_price INTEGER NOT NULL,"
                          "stocks INTEGER NOT NULL,PRIMARY KEY(product_id));")
 
         self.cur.execute("CREATE TABLE if not exists sales ("
-                         "Trans_id	INTEGER,"
-                         "invoice	INTEGER NOT NULL,"
-                         "Product_id	varchar (20),"
+                         "Trans_id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                         "invoice INTEGER NOT NULL,"
+                         "Product_id varchar(20),"
                          "Quantity INTEGER NOT NULL,"
-                         "Date	varchar (20),"
-                         "Time varchar (20),"
-                         "PRIMARY KEY(Trans_id));")
+                         "Date varchar(20),"
+                         "Time varchar(20));")
 
-        self.cur.execute("select * from products ")
-
+        self.cur.execute("SELECT * FROM products")
         self.products = self.cur.fetchall()
-        capuser = self.username.get()
-        capuser = capuser.upper()
-        self.cur.execute("select account_type from users where username= ? ", (capuser,))
+
+        capuser = self.username.get().upper()
+        self.cur.execute("SELECT account_type FROM users WHERE username= ?", (capuser,))
         li = self.cur.fetchall()
         self.account_type = li[0][0]
         self.buildmain()
 
-    #  ADD WIDGETS TO TOP OF MAIN WINDOW
     def buildmain(self):
         if self.account_type == 'ADMIN':
             super(Admin).__init__()
@@ -122,18 +114,62 @@ class Main(Login, Admin, User):
         index = 0
         if 5 <= int(strftime('%H')) < 12:
             index = 0
-        if 12 <= int(strftime('%H')) < 17:
+        elif 12 <= int(strftime('%H')) < 17:
             index = 1
-        if int(strftime('%H')) >= 17:
+        else:
             index = 2
         self.wish_lbl = Label(self.canvas_date, text=f"Good {wish[index]}, Team", bg=BG, fg=FG,
                               font=('calibri', 13, 'italic'))
         self.wish_lbl.place(x=10, y=35)
         self.canvas_date.place(x=1100, y=100)
 
-    # METHODS FOR ITEMS AND CHANGE USER BUTTONS
+    def update_stock_and_sales(self, product_id, quantity_removed):
+        try:
+            # Fetch current stock
+            self.cur.execute("SELECT stocks FROM products WHERE product_id = ?", (product_id,))
+            result = self.cur.fetchone()
+
+            if not result:
+                messagebox.showerror("Error", "Product not found in inventory.")
+                return
+
+            available_stock = result[0]
+
+            if available_stock < quantity_removed:
+                messagebox.showerror("Error", "Insufficient stock!")
+                return
+
+            # Update stock
+            updated_stock = available_stock - quantity_removed
+            self.cur.execute("UPDATE products SET stocks = ? WHERE product_id = ?", (updated_stock, product_id))
+
+            # Record sales
+            date = datetime.date.today().strftime("%Y-%m-%d")
+            time = strftime("%H:%M:%S")
+            self.cur.execute("INSERT INTO sales (invoice, Product_id, Quantity, Date, Time) VALUES (?, ?, ?, ?, ?)",
+                             (None, product_id, quantity_removed, date, time))
+
+            self.base.commit()  # Commit changes
+            messagebox.showinfo("Success", "Stock updated and sale recorded successfully.")
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+
+    def process_sale(self):
+        product_id = self.product_id_entry.get()  # Assuming product_id_entry is an Entry widget
+        try:
+            quantity_removed = int(self.quantity_entry.get())  # Assuming quantity_entry is an Entry widget
+        except ValueError:
+            messagebox.showerror("Error", "Quantity must be a number!")
+            return
+
+        if not product_id or quantity_removed <= 0:
+            messagebox.showerror("Error", "Invalid product ID or quantity!")
+            return
+
+        self.update_stock_and_sales(product_id, quantity_removed)
+
     def change_user(self):
-        if messagebox.askyesno("Alert!", "Do  you want to change user?"):
+        if messagebox.askyesno("Alert!", "Do you want to change user?"):
             self.base.commit()
             self.main_window.destroy()
             self.loginw.destroy()
